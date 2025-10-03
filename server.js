@@ -82,16 +82,30 @@ app.post("/api/pins", (req, res) => {
 // 📌 Update pin (status or verified)
 app.put("/api/pins/:id", (req, res) => {
   const { id } = req.params;
-  const { status, verified } = req.body;
+  const fields = [];
+  const values = [];
 
-  db.run(
-    "UPDATE pins SET status = ?, verified = ? WHERE id = ?",
-    [status, verified ? 1 : 0, id],
-    function (err) {
-      if (err) return res.status(500).json({ error: err.message });
-      res.json({ success: true, changes: this.changes });
-    }
-  );
+  if (req.body.status !== undefined) {
+    fields.push("status = ?");
+    values.push(req.body.status);
+  }
+  if (req.body.verified !== undefined) {
+    fields.push("verified = ?");
+    values.push(req.body.verified ? 1 : 0);
+  }
+
+  if (fields.length === 0) {
+    return res.status(400).json({ error: "No fields to update" });
+  }
+
+  values.push(id);
+
+  const sql = `UPDATE pins SET ${fields.join(", ")} WHERE id = ?`;
+
+  db.run(sql, values, function(err) {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ success: true, changes: this.changes });
+  });
 });
 
 // 📌 Delete a pin
