@@ -53,6 +53,18 @@ app.get("/api/pins", (req, res) => {
   });
 });
 
+// Admin login endpoint
+app.post("/api/admin/login", (req, res) => {
+  const { password } = req.body;
+  const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+
+  if (password === ADMIN_PASSWORD) {
+    res.json({ success: true });
+  } else {
+    res.status(401).json({ success: false, message: "Incorrect password" });
+  }
+});
+
 // 📌 Add a pin
 app.post("/api/pins", (req, res) => {
   const {
